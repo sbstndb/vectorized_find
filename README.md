@@ -80,3 +80,8 @@ BM_IntrinsicFind/2048        102 ns          102 ns      2761901 items_per_secon
 BM_IntrinsicFind/4096        195 ns          194 ns      1452151 items_per_second=21.0601G/s
 ```
 
+**Note** : In the benchmarks, we test the **worst-case** scenario where the target value is located at the end of the vector, meaning that the results are typically faster on average for most real-world cases, except for the version without an early break, which always iterates through the entire array. Hence, **AVX version is 5 times faster than the naive one for arrays sized between 16 and 4096. **
+
+# Conclusion : 
+You can't always produce very efficient and vectorized code even with very simple C code. Optimizing C code with vectorization and SIMD instructions can significantly improve performance for a specific scenario. 
+
