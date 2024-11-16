@@ -81,7 +81,6 @@ Overall, the intrinsic is way more efficient than the other versions. Let's have
 | `branch misses`           | 1 (0.10%) | 1 (0.60%)     | 2 (0.80%)     | 
 
 Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
-
 Now lets explore the assembly code. 
 
 [TODO]
@@ -91,4 +90,10 @@ Now lets explore the assembly code.
 
 # Conclusion : 
 You can't always produce very efficient and vectorized code even with very simple C code. Optimizing C code with vectorization and SIMD instructions can significantly improve performance for a specific scenario. 
+
+# TODO 
+
+-  Add Assembly code analysis
+-  COmparison with `std::find` in `std` container
+-  Try to improve the C style code to achieve the same level of performance than the intrinsic one
 
