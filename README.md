@@ -83,7 +83,7 @@ Overall, the intrinsic is way more efficient than the other versions. Let's have
 **Note** : Here the vector has a size of `size = 1024` integers.
 
 Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
-Now lets explore the assembly code. 
+Now lets explore the assembly code. I don't know why the `NoBreak` has so few branches.
 
 [TODO]
 
