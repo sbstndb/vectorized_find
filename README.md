@@ -80,6 +80,11 @@ Overall, the intrinsic is way more efficient than the other versions. Let's have
 | `branches`                | 2057      | 135           | 288           | 
 | `branch misses`           | 1 (0.10%) | 1 (0.60%)     | 2 (0.80%)     | 
 
+Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
+
+Now lets explore the assembly code. 
+
+[TODO]
 
 
 **Note** : In the benchmarks, we test the **worst-case** scenario where the target value is located at the end of the vector, meaning that the results are typically faster on average for most real-world cases, except for the version without an early break, which always iterates through the entire array. Hence, **AVX version is 5 times faster than the naive one for arrays sized between 16 and 4096. **
