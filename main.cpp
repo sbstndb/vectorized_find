@@ -80,7 +80,7 @@ void BM_NaiveFind(benchmark::State& state){
 
 void BM_NoBreakFind(benchmark::State& state){
         const int size = state.range(0) ;
-        int* vector = (int*) malloc(sizeof(int) * size) ;
+        int* vector = (int*) aligned_alloc(64, sizeof(int) * size) ;
         int value = 1 ;
         init_vector(vector, size, value, size-1);
         int index ;
@@ -93,7 +93,7 @@ void BM_NoBreakFind(benchmark::State& state){
 
 
 void BM_IntrinsicFind(benchmark::State& state){
-        const int size = state.range(0) ;
+        int size = state.range(0) ;
 	// !! AVX 
 	if (size < 8) {
 		size = 8 ; 
