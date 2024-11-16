@@ -10,10 +10,15 @@ int main(){
         int* vector = (int*) malloc(sizeof(int) * size) ;
         int value = 1 ;
         init_vector(vector, size, value, size-1);
-        int index ;
-        index = intrinsic_find(vector, size, value);
+        int index = 0;
+        int loop = 10000000 ;
+        for (int i = 0 ; i < loop ; i++){
+                index += intrinsic_find(vector, size, value);
+        }
 
-	std::cout << " Index position : " << index << std::endl ; 
+        std::cout << " Index position : " << index/loop << std::endl ;
+
+
 }
 
 
