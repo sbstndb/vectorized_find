@@ -94,6 +94,6 @@ You can't always produce very efficient and vectorized code even with very simpl
 # TODO 
 
 -  Add Assembly code analysis
--  COmparison with `std::find` in `std` container
+-  Comparison with `std::find` in `std` container
 -  Try to improve the C style code to achieve the same level of performance than the intrinsic one
 
