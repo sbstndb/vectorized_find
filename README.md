@@ -4,7 +4,7 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Features
+## Features :
 
 - **Vectorized Search**:
   - Uses AVX2 intrinsics to process multiple elements in parallel.
@@ -15,7 +15,7 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Requirements
+## Requirements : 
 
 ### Hardware
 - A processor with **AVX2 support**. 
@@ -27,14 +27,14 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Compilation
+## Compilation :
 
 ```
 cmake -B build -S .         # Compile with CMake
 ./build/benchmark_find      # Run the benchmark
 ```
 
-# Results : 
+## Results : 
 
 Here are the _Google Benchmark_ results on my AMD Ryzen R3900X :
 
@@ -88,10 +88,10 @@ Now lets explore the assembly code.
 
 **Note** : In the benchmarks, we test the **worst-case** scenario where the target value is located at the end of the vector, meaning that the results are typically faster on average for most real-world cases, except for the version without an early break, which always iterates through the entire array. Hence, **AVX version is 5 times faster than the naive one for arrays sized between 16 and 4096. **
 
-# Conclusion : 
+## Conclusion : 
 You can't always produce very efficient and vectorized code even with very simple C code. Optimizing C code with vectorization and SIMD instructions can significantly improve performance for a specific scenario. 
 
-# TODO 
+## TODO :
 
 -  Add Assembly code analysis
 -  Comparison with `std::find` in `std` container
