@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.28)
 project(VectorizedFind LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native -mavx2 -Ofast ")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native -mavx2 -Ofast -g")
 
 
 find_package(benchmark REQUIRED)
