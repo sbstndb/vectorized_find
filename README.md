@@ -80,6 +80,8 @@ Overall, the intrinsic is way more efficient than the other versions. Let's have
 | `branches`                | 2057      | 135           | 288           | 
 | `branch misses`           | 1 (0.10%) | 1 (0.60%)     | 2 (0.80%)     | 
 
+**Note** : Here the vector has a size of `size = 1024` integers.
+
 Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
 Now lets explore the assembly code. 
 
