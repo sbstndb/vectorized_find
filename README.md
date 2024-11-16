@@ -36,7 +36,7 @@ cmake -B build -S .         # Compile with CMake
 
 ## Results : 
 
-Here are the _Google Benchmark_ results on my AMD Ryzen R3900X :
+Here are the _Google Benchmark_ results on my AMD Ryzen R3900X, with `g++` compiler (that allow better performances than `clang++` in all cases) :
 
 ```
 --------------------------------------------------------------------------------
