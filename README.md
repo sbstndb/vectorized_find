@@ -27,7 +27,7 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Compilatiob
+## Compilation
 
 ```
 cmake -B build -S .         # Compile with CMake
