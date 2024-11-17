@@ -29,6 +29,16 @@ int nobreak_find(int* vector, int size, int value){
 }
 
 
+int compare_find(int* vector, int size, int value){
+        int index = 0 ;
+        for (int i = 0 ; i < size ; i++){
+		index += (i < value) ; 
+        }
+        return index ;
+}
+
+
+
 int cpp_find(int* vector, int size, int value){
 	int *pindex = std::find(vector, vector + size, value) ; 
 	// Theorically, we have to verify vector[pindex] == value ...

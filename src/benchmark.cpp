@@ -38,6 +38,22 @@ void BM_NoBreakFind(benchmark::State& state){
 	free(vector);
 }
 
+
+void BM_CompareFind(benchmark::State& state){
+        const int size = state.range(0) ;
+        int* vector = (int*) aligned_alloc(64, sizeof(int) * size) ;
+        int value = 1 ;
+        init_vector(vector, size, value, size-1);
+        int index ;
+        for (auto _ : state){
+                index = compare_find(vector, size, value);
+                benchmark::DoNotOptimize(index);
+        }
+        state.SetItemsProcessed(state.iterations() * size);
+        free(vector);
+}
+
+
 void BM_CppFind(benchmark::State& state){
         const int size = state.range(0) ;
         int* vector = (int*) aligned_alloc(64, sizeof(int) * size) ;
@@ -86,6 +102,7 @@ void BM_IntrinsicFind(benchmark::State& state){
 
 BENCHMARK(BM_NaiveFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_NoBreakFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
+BENCHMARK(BM_CompareFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_CppFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_CppVectorFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_IntrinsicFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
