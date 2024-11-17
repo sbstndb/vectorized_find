@@ -4,7 +4,7 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Features
+## Features :
 
 - **Vectorized Search**:
   - Uses AVX2 intrinsics to process multiple elements in parallel.
@@ -15,7 +15,7 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Requirements
+## Requirements : 
 
 ### Hardware
 - A processor with **AVX2 support**. 
@@ -27,16 +27,16 @@ This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the proc
 
 ---
 
-## Compilation
+## Compilation :
 
 ```
 cmake -B build -S .         # Compile with CMake
 ./build/benchmark_find      # Run the benchmark
 ```
 
-# Results : 
+## Results : 
 
-Here are the _Google Benchmark_ results on my AMD Ryzen R3900X :
+Here are the _Google Benchmark_ results on my AMD Ryzen R3900X, with `g++` compiler (that allow better performances than `clang++` in all cases) :
 
 ```
 --------------------------------------------------------------------------------
@@ -80,15 +80,24 @@ Overall, the intrinsic is way more efficient than the other versions. Let's have
 | `branches`                | 2057      | 135           | 288           | 
 | `branch misses`           | 1 (0.10%) | 1 (0.60%)     | 2 (0.80%)     | 
 
-Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
+**Note** : Here the vector has a size of `size = 1024` integers.
 
-Now lets explore the assembly code. 
+Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
+Now lets explore the assembly code. I don't know why the `NoBreak` has so few branches.
 
 [TODO]
 
 
 **Note** : In the benchmarks, we test the **worst-case** scenario where the target value is located at the end of the vector, meaning that the results are typically faster on average for most real-world cases, except for the version without an early break, which always iterates through the entire array. Hence, **AVX version is 5 times faster than the naive one for arrays sized between 16 and 4096. **
 
-# Conclusion : 
+## Conclusion : 
 You can't always produce very efficient and vectorized code even with very simple C code. Optimizing C code with vectorization and SIMD instructions can significantly improve performance for a specific scenario. 
+
+## TODO :
+
+-  Add Assembly code analysis
+-  Comparison with `std::find` in `std` container
+-  Try to improve the C style code to achieve the same level of performance than the intrinsic one
+-  Try SIMD libraries like `Highway` from _Google_ or `xsimd` from _QuantStack_
+-  Benchmark with strided vision of the data (in case of inefficient AOS memory layout)
 
