@@ -100,12 +100,33 @@ void BM_IntrinsicFind(benchmark::State& state){
 }
 
 
+void BM_Intrinsic2Find(benchmark::State& state){
+        int size = state.range(0) ;
+        // !! AVX
+        if (size < 8) {
+                size = 8 ;
+        }
+        int* vector = (int*) malloc(sizeof(int) * size) ;
+        int value = 1 ;
+        init_vector(vector, size, value, size-1);
+        int index ;
+        for (auto _ : state){
+                index = intrinsic2_find(vector, size, value);
+                benchmark::DoNotOptimize(index);
+        }
+        state.SetItemsProcessed(state.iterations() * size);
+        free(vector);
+}
+
+
 BENCHMARK(BM_NaiveFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_NoBreakFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_CompareFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_CppFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_CppVectorFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_IntrinsicFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
+BENCHMARK(BM_Intrinsic2Find)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
+
 
 
 

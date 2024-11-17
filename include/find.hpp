@@ -70,6 +70,28 @@ int intrinsic_find(int* vector, int size, int value){
 	return index ;
 }
 
+int intrinsic2_find(int* vector, int size, int value){
+        // experimental
+        int index = -1 ;
+        __m256i target = _mm256_set1_epi32(value) ;
+	__m256i count = _mm256_setzero_si256() ; 
+
+        for (int i = 0 ; i < size ; i+=8){//avx2
+                __m256i chunk = _mm256_loadu_si256((const __m256i_u*)&vector[i]); // load vector in AVX reg
+                __m256i mask = _mm256_cmpgt_epi32(target, chunk);
+		__m256i ones = _mm256_and_si256(mask, _mm256_set1_epi32(1));
+		count = _mm256_add_epi32(count, ones) ; 
+	}
+
+	count = _mm256_hadd_epi32(count, count);
+        count = _mm256_hadd_epi32(count, count);	
+
+	index = _mm256_extract_epi32(count, 0) ; 
+        return index ;
+}
+
+
+
 
 void init_vector(int* vector, int size, int value, int index){
         for (int i = 0 ; i < size ; i++){
