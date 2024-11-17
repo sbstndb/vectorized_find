@@ -1,4 +1,6 @@
 #include <immintrin.h>
+#include <algorithm>
+#include <vector>
 
 
 int naive_find(int* vector, int size, int value){
@@ -24,6 +26,20 @@ int nobreak_find(int* vector, int size, int value){
                 }
         }
         return index ;
+}
+
+
+int cpp_find(int* vector, int size, int value){
+	int *pindex = std::find(vector, vector + size, value) ; 
+	// Theorically, we have to verify vector[pindex] == value ...
+	return pindex - vector ; 
+}
+
+
+int cppvector_find(std::vector<int>& vector, int value){
+        auto aindex = std::find(vector.begin(), vector.end(), value) ;
+        // Theorically, we have to verify vector[pindex] == value ...
+        return std::distance (vector.begin(), aindex) ;
 }
 
 

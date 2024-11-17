@@ -21,6 +21,7 @@ void BM_NaiveFind(benchmark::State& state){
 		benchmark::DoNotOptimize(index);
 	}
 	state.SetItemsProcessed(state.iterations() * size);	
+	free(vector);
 }
 
 void BM_NoBreakFind(benchmark::State& state){
@@ -34,8 +35,35 @@ void BM_NoBreakFind(benchmark::State& state){
                 benchmark::DoNotOptimize(index);
         }
 	state.SetItemsProcessed(state.iterations() * size);	
+	free(vector);
 }
 
+void BM_CppFind(benchmark::State& state){
+        const int size = state.range(0) ;
+        int* vector = (int*) aligned_alloc(64, sizeof(int) * size) ;
+        int value = 1 ;
+        init_vector(vector, size, value, size-1);
+        int index ;
+        for (auto _ : state){
+                index = cpp_find(vector, size, value);
+                benchmark::DoNotOptimize(index);
+        }
+        state.SetItemsProcessed(state.iterations() * size);
+	free(vector);
+}
+
+void BM_CppVectorFind(benchmark::State& state){
+        const int size = state.range(0) ;
+	std::vector<int> vector(size, 0) ; 
+        int value = 1 ;
+	vector[size-1] = value ; 
+	int index = -1 ; 
+        for (auto _ : state){
+                index = cppvector_find(vector, value);
+                benchmark::DoNotOptimize(index);
+        }
+        state.SetItemsProcessed(state.iterations() * size);
+}
 
 void BM_IntrinsicFind(benchmark::State& state){
         int size = state.range(0) ;
@@ -52,11 +80,14 @@ void BM_IntrinsicFind(benchmark::State& state){
                 benchmark::DoNotOptimize(index);
         }
 	state.SetItemsProcessed(state.iterations() * size);
+	free(vector);
 }
 
 
 BENCHMARK(BM_NaiveFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_NoBreakFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
+BENCHMARK(BM_CppFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
+BENCHMARK(BM_CppVectorFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 BENCHMARK(BM_IntrinsicFind)->RangeMultiplier(RM)->Range(MS << 0, 1 << PS);
 
 
