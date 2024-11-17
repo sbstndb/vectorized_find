@@ -27,7 +27,13 @@ include_directories(include)
 
 add_executable(naive src/naive.cpp)
 add_executable(nobreak src/nobreak.cpp)
+add_executable(compare src/compare.cpp)
+
+
 add_executable(intrinsic src/intrinsic.cpp)
+add_executable(intrinsic2 src/intrinsic2.cpp)
+
+
 
 add_executable(benchmark_find src/benchmark.cpp)
 target_link_libraries(benchmark_find PRIVATE benchmark::benchmark)

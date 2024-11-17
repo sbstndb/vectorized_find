@@ -11,7 +11,7 @@ int main(){
         int value = 1 ;
         init_vector(vector, size, value, size-1);
         int index = 0;
-	int loop = 10000000 ; 
+	int loop = 1000000 ; 
 	for (int i = 0 ; i < loop ; i++){
 	        index += naive_find(vector, size, value);
 	}

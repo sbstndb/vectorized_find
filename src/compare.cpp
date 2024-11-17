@@ -13,7 +13,7 @@ int main(){
         int index = 0;
         int loop = 1000000 ;
         for (int i = 0 ; i < loop ; i++){
-                index += nobreak_find(vector, size, value);
+                index += compare_find(vector, size, value);
         }
 
         std::cout << " Index position : " << index/loop << std::endl ;
