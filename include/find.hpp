@@ -75,18 +75,27 @@ int intrinsic2_find(int* vector, int size, int value){
         int index = -1 ;
         __m256i target = _mm256_set1_epi32(value) ;
 	__m256i count = _mm256_setzero_si256() ; 
+        __m256i count2 = _mm256_setzero_si256() ;
 
-        for (int i = 0 ; i < size ; i+=8){//avx2
+        for (int i = 0 ; i < size ; i+=16){//avx2
                 __m256i chunk = _mm256_loadu_si256((const __m256i_u*)&vector[i]); // load vector in AVX reg
                 __m256i mask = _mm256_cmpgt_epi32(target, chunk);
 		__m256i ones = _mm256_and_si256(mask, _mm256_set1_epi32(1));
 		count = _mm256_add_epi32(count, ones) ; 
+
+                __m256i chunk2 = _mm256_loadu_si256((const __m256i_u*)&vector[i+8]); // load vector in AVX reg
+                __m256i mask2 = _mm256_cmpgt_epi32(target, chunk2);
+                __m256i ones2 = _mm256_and_si256(mask2, _mm256_set1_epi32(1));
+                count2 = _mm256_add_epi32(count, ones2) ;
 	}
+	count = _mm256_add_epi32(count, count2) ;
+	
 
-	count = _mm256_hadd_epi32(count, count);
-        count = _mm256_hadd_epi32(count, count);	
+	__m256i sum = _mm256_hadd_epi32(count, count) ; 
+        sum = _mm256_hadd_epi32(sum, sum) ;	
 
-	index = _mm256_extract_epi32(count, 0) ; 
+
+	index = _mm256_extract_epi32(sum, 0) + _mm256_extract_epi32(sum, 1) ; 
         return index ;
 }
 
