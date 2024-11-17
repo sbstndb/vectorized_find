@@ -96,7 +96,6 @@ You can't always produce very efficient and vectorized code even with very simpl
 ## TODO :
 
 -  Add Assembly code analysis
--  Comparison with `std::find` in `std` container
 -  Try to improve the C style code to achieve the same level of performance than the intrinsic one
 -  Try SIMD libraries like `Highway` from _Google_ or `xsimd` from _QuantStack_
 -  Benchmark with strided vision of the data (in case of inefficient AOS memory layout)
