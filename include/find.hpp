@@ -30,9 +30,17 @@ int nobreak_find(int* vector, int size, int value){
 
 
 int compare_find(int* vector, int size, int value){
-        int index = 0 ;
+        int index = -1 ;
         for (int i = 0 ; i < size ; i++){
 		index += (vector[i] < value) ; 
+        }
+        return index ;
+}
+
+int compare_find(float* vector, int size, float value){
+	int index = -1 ; 
+        for (int i = 0 ; i < size ; i++){
+                index += (vector[i] < value) ;
         }
         return index ;
 }
@@ -76,24 +84,16 @@ int intrinsic_find(int* vector, int size, int value){
         // experimental
         int index = -1 ;
         __m256i target = _mm256_set1_epi32(value) ;
-
 // In my cpu : optimal unrolling around 2 SIMD finds per loop	
         for (int i = 0 ; i < size ; i+=16){//avx2
                 __m256i chunk  = _mm256_loadu_si256((const __m256i_u*)&vector[i]); // load vector in AVX reg
                 __m256i chunk2 = _mm256_loadu_si256((const __m256i_u*)&vector[i+8]); // load vector in AVX reg		
-//                __m256i chunk3 = _mm256_loadu_si256((const __m256i_u*)&vector[i+16]); // load vector in AVX reg
-//                __m256i chunk4 = _mm256_loadu_si256((const __m256i_u*)&vector[i+24]); // load vector in AVX reg   
 										      //
 		__m256i cmp  = _mm256_cmpeq_epi32(chunk , target);
                 __m256i cmp2 = _mm256_cmpeq_epi32(chunk2, target);
-//                __m256i cmp3 = _mm256_cmpeq_epi32(chunk3, target);
-//                __m256i cmp4 = _mm256_cmpeq_epi32(chunk4, target);
-		
 
                 int mask_result  = _mm256_movemask_epi8(cmp );
                 int mask_result2 = _mm256_movemask_epi8(cmp2);		
-//                int mask_result3 = _mm256_movemask_epi8(cmp3);
-//                int mask_result4 = _mm256_movemask_epi8(cmp4);
 
                 if (mask_result !=0){
                         int index = __builtin_ctz(mask_result) / 4 ;
@@ -103,18 +103,40 @@ int intrinsic_find(int* vector, int size, int value){
                         int index = __builtin_ctz(mask_result2) / 4 ;
                         return i+index+8 ;
                 }
-//                if (mask_result3 !=0){
-//                        int index = __builtin_ctz(mask_result3) / 4 ;
-//                        return i+index+16 ;
-//                }
-//                if (mask_result4 !=0){
-//                        int index = __builtin_ctz(mask_result4) / 4 ;
-//                        return i+index+24 ;
-//                }
-
         }
         return index ;
 }
+
+
+
+int intrinsic_find(float* vector, int size, float value){
+        // experimental
+        int index = -1 ;
+        __m256 target = _mm256_set1_ps(value) ;
+// In my cpu : optimal unrolling around 2 SIMD finds per loop   
+        for (int i = 0 ; i < size ; i+=16){//avx2
+                __m256 chunk  = _mm256_loadu_ps(&vector[i]); // load vector in AVX reg
+                __m256 chunk2 = _mm256_loadu_ps(&vector[i+8]); // load vector in AVX reg          
+                                                                                      //
+                __m256 cmp  = _mm256_cmp_ps(chunk , target, _CMP_EQ_OS);
+                __m256 cmp2 = _mm256_cmp_ps(chunk2, target, _CMP_EQ_OS);
+
+                int mask_result  = _mm256_movemask_ps(cmp );
+                int mask_result2 = _mm256_movemask_ps(cmp2);
+
+                if (mask_result !=0){
+                        int index = __builtin_ctz(mask_result)  ;
+                        return i+index ;
+                }
+                if (mask_result2 !=0){
+                        int index = __builtin_ctz(mask_result2) ;
+                        return i+index+8 ;
+                }
+        }
+        return index ;
+}
+
+
 
 
 int intrinsic2_find(int* vector, int size, int value){
@@ -155,4 +177,12 @@ void init_vector(int* vector, int size, int value, int index){
         }
 	vector[index] = value ;
 }
+
+void init_vector(float* vector, int size, float value, int index){
+        for (int i = 0 ; i < size ; i++){
+                vector[i] = 0 ;
+        }
+        vector[index] = value ;
+}
+
 

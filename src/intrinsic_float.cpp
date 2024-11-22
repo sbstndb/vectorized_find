@@ -7,16 +7,20 @@
 const int size = 1024 ; 
 
 int main(){
-        int* vector = (int*) malloc(sizeof(int) * size) ;
-        int value = 1 ;
+        float* vector = (float*) malloc(sizeof(float) * size) ;
+        float value = 1.0f ;
         init_vector(vector, size, value, size-1);
         int index = 0;
-        int loop = 1000000 ;
+        int loop = 1 ;
         for (int i = 0 ; i < loop ; i++){
-                index += compare_find(vector, size, value);
+                index += intrinsic_find(vector, size, value);
         }
 
         std::cout << " Index position : " << index/loop << std::endl ;
 
+
 }
+
+
+
 
