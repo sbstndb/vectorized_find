@@ -15,6 +15,17 @@ int naive_find(int* vector, int size, int value){
 }
 
 
+int naive_stride_find(int* vector, int size , int value){
+	int index = -1 ; 
+	for (int i = 0 ; i < size ; i+=4){
+		if (vector[i] == value){
+			index = i ; 
+			return index ; 
+		}
+	}
+	return index ; 
+}
+
 int nobreak_find(int* vector, int size, int value){
         int index = -1 ;
         for (int i = 0 ; i < size ; i++){

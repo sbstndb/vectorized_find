@@ -26,6 +26,8 @@ find_package(benchmark REQUIRED)
 include_directories(include)
 
 add_executable(naive src/naive.cpp)
+add_executable(naive_strided src/naive_strided.cpp)
+
 add_executable(nobreak src/nobreak.cpp)
 add_executable(compare src/compare.cpp)
 
