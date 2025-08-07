@@ -1,0 +1,46 @@
+build/
+
+# Build artifacts
+bin/
+lib/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+cmake-build-*/
+
+# CMake-specific
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+install_manifest.txt
+Makefile
+CTestTestfile.cmake
+_CPack_Packages/
+
+# Editor/IDE files
+.vscode/
+.idea/
+.project
+.cproject
+*.swp
+*~
+*.bak
+*.swo
+
+# Dependency management
+/deps/
+/external/
+/.conan/
+
+# Test/Coverage reports
+/coverage/
+.last_coveragerc
+
+# Other common ignored files
+*.log
+*.tmp
+*.bak
+*.DS_Store
+Thumbs.db

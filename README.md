@@ -1,102 +1,212 @@
-# Vectorized Find with SIMD and Benchmarking
+# Vectorized Find with SIMD and High-Performance Benchmarking
 
-This project demonstrates the use of SIMD intrinsics (AVX2) to optimize the process of finding the index of an integer in an array. It also includes a Google Benchmark setup to compare the performance of a vectorized implementation against a naïve loop-based implementation.
+This project delves into various high-performance implementations for locating an element within an array, primarily focusing on optimizations utilizing Single Instruction, Multiple Data (SIMD) intrinsics (AVX2). It leverages Google Benchmark for a rigorous quantitative analysis of the computational efficiency across diverse algorithmic approaches.
 
 ---
 
 ## Features :
 
-- **Vectorized Search**:
-  - Uses AVX2 intrinsics to process multiple elements in parallel.
-  - Significantly faster for large arrays compared to a naïve implementation.
+- **Optimized Search Implementations** :
+  - **Naive** : Baseline linear search implementation for performance comparison.
+  - **Stride** : Linear search employing a stride for memory access pattern analysis.
+  - **No-Break** : Linear search without early exit, designed to analyze consistent loop overhead and branch prediction impact.
+  - **Compare** : Implementations utilizing parallel comparison operations for index determination in integer and floating-point arrays.
+  - **C++ STL (`std::find`)** : Standard Library algorithms for comparative performance analysis on contiguous C-style arrays and `std::vector`.
+  - **Intrinsics (AVX2)** : Highly optimized, low-level implementations leveraging AVX2 instructions for explicit data parallelism in integer and floating-point element searches.
+  - **Intrinsic2 (AVX2)** : An experimental intrinsic variant designed for enhanced throughput, showcasing advanced AVX2 utilization.
 
-- **Benchmarking**:
-  - Google Benchmark is used to measure and compare the performance of both implementations.
+- **Integrated High-Resolution Benchmarking** :
+  - Employs Google Benchmark for precise, micro-architectural performance measurements and comparative analysis of each implementation.
+  - Benchmark results are automatically generated upon execution, providing empirical data on algorithmic throughput.
 
 ---
 
 ## Requirements : 
 
 ### Hardware
-- A processor with **AVX2 support**. 
+- A processor with **AVX2 instruction set support**.
 
 ### Software
 - C++17 or later.
 - CMake 3.28 or later.
-- GCC/Clang with AVX2 support.
+- GCC/Clang with robust AVX2 instruction set support.
 
 ---
 
-## Compilation :
+## Compilation and Execution :
+
+To compile and execute the project for performance evaluation, follow these steps:
+
+1.  **Create the build directory and configure CMake** :
+    ```bash
+    mkdir -p build && cd build
+    cmake ..
+    ```
+
+2.  **Compile the project** :
+    ```bash
+    make
+    ```
+
+3.  **Execute Benchmarks** :
+    ```bash
+    ./vectorized_find
+    ```
+    Benchmark results, presented as computational throughput, will be streamed to the console. Raw performance data (text files) will be systematically archived in `docs/perf_results`.
+
+---
+
+## Benchmark Results and Performance Analysis :
+
+Below is a summary of the measured computational throughput (in billions of elements processed per second - Giga-elements/s) for a vector size of 4096 elements, assessed using Google Benchmark. These metrics are indicative of operations per cycle (OPS) and overall data processing rate, crucial in HPC contexts.
+
+| Implementation         | Throughput (G-elements/s) | Notes                                           |
+|------------------------|---------------------------|-------------------------------------------------|
+| `FIND_NaiveFind`         | ~4.6                      | Baseline sequential search.                       |
+| `FIND_NaiveStridedFind`  | ~4.6                      | Explores memory access patterns; similar to naive. |
+| `FIND_NoBreakFind`       | ~16.5                     | Demonstrates branch prediction resilience.      |
+| `FIND_CompareFind`       | ~32.2                     | Efficient for integer-based comparisons.        |
+| `FIND_CompareFloatFind`  | ~23.5                     | Optimized for floating-point comparisons.       |
+| `FIND_CppFind`           | ~7.7                      | Standard C++ `std::find` on raw arrays.         |
+| `FIND_CppVectorFind`     | ~8.1                      | Standard C++ `std::find` on `std::vector`.      |
+| `FIND_IntrinsicFind`     | ~24.9                     | AVX2-optimized integer search.                  |
+| `FIND_IntrinsicFloatFind`| ~25.3                     | AVX2-optimized floating-point search.           |
+| `FIND_Intrinsic2Find`    | **~49.7**                 | **Peak Performance**: Highlights advanced AVX2 potential. |
+
+**Key Performance Insight** : The intrinsic-based implementations, especially `FIND_Intrinsic2Find`, consistently demonstrate superior computational throughput compared to both naive and standard library approaches. This underscores the significant performance gains achievable through direct SIMD instruction leverage in data-intensive HPC workloads.
+
+**Note on Worst-Case Benchmarking** : These benchmarks are designed to evaluate the **worst-case scenario** where the target element is located at the very end of the vector. Consequently, the reported performance metrics represent a lower bound for most real-world applications. Implementations without an early-exit condition (`No-Break`) inherently iterate through the entire dataset, thus their worst-case performance closely approximates their average performance.
+
+---
+
+## Deep Dive: Peak Performance Implementation Analysis
+
+### FIND_Intrinsic2Find - The Fastest Implementation (~49.7 G-elements/s)
+
+The `FIND_Intrinsic2Find` function represents the pinnacle of performance in our benchmark suite, achieving nearly **50 billion elements processed per second**. This implementation leverages advanced AVX2 intrinsics in a unique way compared to traditional search algorithms.
+
+#### Algorithm Overview
+
+Unlike conventional find operations that search for equality, `intrinsic2_find` employs a **counting-based approach** using vectorized comparison operations. The algorithm counts how many elements are less than the target value across the entire array. Because the array is sorted, this count is equivalent to the index of the first element that is greater than or equal to the target value. This makes the function behave like a `lower_bound` search, efficiently finding the position of an element (or its insertion point) in a sorted sequence.
+
+
+#### Key AVX2 Instructions Used
+
+| Instruction | Purpose | Impact |
+|-------------|---------|---------|
+| `_mm256_set1_epi32()` | Broadcast target value to all 8 lanes | Parallel comparison setup |
+| `_mm256_loadu_si256()` | Load 8 integers from memory | Memory bandwidth utilization |
+| `_mm256_cmpgt_epi32()` | Vectorized greater-than comparison | 8 comparisons in parallel |
+| `_mm256_and_si256()` | Bitwise AND with mask | Conditional value selection |
+| `_mm256_add_epi32()` | Vectorized addition | Parallel accumulation |
+| `_mm256_hadd_epi32()` | Horizontal addition | Efficient reduction |
+
+#### Register-Level Visualization
 
 ```
-cmake -B build -S .         # Compile with CMake
-./build/benchmark_find      # Run the benchmark
+Initial State (searching for value=42 in array):
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                       Input Array (32-bit integers)                        │
+├─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┤
+│   10    │   25    │   30    │   42    │   55    │   60    │   70    │   ...   │
+└─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Step 1: Load 8 elements into AVX2 register (_mm256_loadu_si256)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           __m256i chunk                                    │
+├─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┤
+│   10    │   25    │   30    │   42    │   55    │   60    │   70    │   80    │
+└─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+   L0        L1        L2        L3        L4        L5        L6        L7 
+
+Step 2: Broadcast target value (_mm256_set1_epi32)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          __m256i target                                    │
+├─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┤
+│   42    │   42    │   42    │   42    │   42    │   42    │   42    │   42    │
+└─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Step 3: Vectorized comparison (_mm256_cmpgt_epi32: target > chunk)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           __m256i mask                                     │
+├─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┤
+│0xFFFFFFFF│0xFFFFFFFF│0xFFFFFFFF│  0x0    │  0x0    │  0x0    │  0x0    │  0x0    │
+└─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+   TRUE      TRUE      TRUE     FALSE     FALSE     FALSE     FALSE     FALSE
+  42>10     42>25     42>30    42>42     42>55     42>60     42>70     42>80
+
+Step 4: Convert mask to count values (_mm256_and_si256)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           __m256i ones                                     │
+├─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┬─────────┤
+│    1    │    1    │    1    │    0    │    0    │    0    │    0    │    0    │
+└─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┴─────────┘
+
+Step 5: Accumulate counts across iterations (_mm256_add_epi32)
+This is NOT a per-lane count! The algorithm processes 16 elements per iteration.
+Each iteration adds 0 or 1 to the running count based on comparisons:
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│            `count_vec` Accumulation (Iteration on elems 0-15)               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ Initial `count_vec`:       [0, 0, 0, 0, 0, 0, 0, 0]                         │
+│ + Mask (elems 0-7):        [1, 1, 1, 0, 0, 0, 0, 0]  (from Step 4)          │
+│ + Mask (elems 8-15):       [0, 0, 0, 0, 0, 0, 0, 0]  (all >= 42)            │
+│ --------------------------------------------------------------------------- │
+│ Final `count_vec`:         [1, 1, 1, 0, 0, 0, 0, 0]                         │
+│                                                                             │
+│ (Further iterations add 0, as all remaining elements are >= 42)             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+Final Step: Horizontal reduction (_mm256_hadd_epi32)
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                     Horizontal Sum Reduction                               │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ The hadd operations sum all lane values together:                          │
+│ Total = sum of all lanes = count of elements < target in entire array     │
+│                                                                             │
+│           │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Results : 
+#### Performance Advantages
 
-Here are the _Google Benchmark_ results on my AMD Ryzen R3900X, with `g++` compiler (that allow better performances than `clang++` in all cases) :
+1. **No Early Exit Overhead**: Unlike traditional find algorithms, this approach eliminates branch prediction penalties by processing the entire dataset consistently.
 
-```
---------------------------------------------------------------------------------
-Benchmark                      Time             CPU   Iterations UserCounters...
---------------------------------------------------------------------------------
-BM_NaiveFind/2             0.919 ns        0.916 ns    305405212 items_per_second=2.18382G/s
-BM_NaiveFind/4              1.46 ns         1.45 ns    192222961 items_per_second=2.75688G/s
-BM_NaiveFind/8              2.86 ns         2.85 ns     92180466 items_per_second=2.80537G/s
-BM_NaiveFind/16             5.00 ns         4.98 ns     60587199 items_per_second=3.21083G/s
-BM_NaiveFind/32             8.46 ns         8.43 ns     33286918 items_per_second=3.79546G/s
-BM_NaiveFind/64             23.9 ns         23.8 ns     11660289 items_per_second=2.69135G/s
-BM_NaiveFind/256            68.3 ns         68.1 ns      4231949 items_per_second=3.75962G/s
-BM_NaiveFind/1024            236 ns          235 ns      1207154 items_per_second=4.36066G/s
-BM_NaiveFind/4096            918 ns          915 ns       306829 items_per_second=4.47566G/s
-BM_NoBreakFind/2            1.99 ns         1.98 ns    141670400 items_per_second=1.01047G/s
-BM_NoBreakFind/4            1.79 ns         1.79 ns    156437123 items_per_second=2.23912G/s
-BM_NoBreakFind/8            2.03 ns         2.02 ns    138141568 items_per_second=3.96384G/s
-BM_NoBreakFind/16           2.25 ns         2.24 ns    118318471 items_per_second=7.13211G/s
-BM_NoBreakFind/32           2.95 ns         2.94 ns     95116023 items_per_second=10.872G/s
-BM_NoBreakFind/64           4.38 ns         4.36 ns     64200661 items_per_second=14.6738G/s
-BM_NoBreakFind/256          15.4 ns         15.3 ns     18091339 items_per_second=16.6785G/s
-BM_NoBreakFind/1024         58.1 ns         57.9 ns      4784762 items_per_second=17.6934G/s
-BM_NoBreakFind/4096          231 ns          230 ns      1211683 items_per_second=17.8073G/s
-BM_IntrinsicFind/2         0.893 ns        0.890 ns    313818521 items_per_second=2.24746G/s
-BM_IntrinsicFind/4         0.892 ns        0.890 ns    314603935 items_per_second=4.49641G/s
-BM_IntrinsicFind/8         0.893 ns        0.890 ns    314942066 items_per_second=8.98992G/s
-BM_IntrinsicFind/16         1.15 ns         1.14 ns    234266328 items_per_second=13.9829G/s
-BM_IntrinsicFind/32         1.91 ns         1.90 ns    147737571 items_per_second=16.8246G/s
-BM_IntrinsicFind/64         3.37 ns         3.35 ns     83471337 items_per_second=19.0783G/s
-BM_IntrinsicFind/256        12.0 ns         11.9 ns     23372660 items_per_second=21.4674G/s
-BM_IntrinsicFind/1024       54.9 ns         54.8 ns      5131342 items_per_second=18.6945G/s
-BM_IntrinsicFind/4096        195 ns          194 ns      1452151 items_per_second=21.0601G/s
-```
+2. **Maximum SIMD Utilization**: Each AVX2 instruction operates on 8 elements simultaneously, achieving optimal instruction-level parallelism.
 
-Overall, the intrinsic is way more efficient than the other versions. Let's have more details using the `perf` profiling tool. 
+3. **Reduced Memory Access**: The algorithm processes two 256-bit chunks (16 elements) per iteration, maximizing cache line utilization.
 
-| **Statistic**             | **Naive** | **NoBreak**   | **Intrinsic** |
-|---------------------------|-----------|---------------|---------------|
-| `cycles`                  | 1157      | 349           | 420           |
-| `instructions per cycle`  | 4.46      | 3.39          | 2.51          | 
-| `branches`                | 2057      | 135           | 288           | 
-| `branch misses`           | 1 (0.10%) | 1 (0.60%)     | 2 (0.80%)     | 
+4. **Efficient Reduction**: The horizontal addition instructions (`_mm256_hadd_epi32`) provide hardware-accelerated final summation.
 
-**Note** : Here the vector has a size of `size = 1024` integers.
+#### Algorithmic Complexity
 
-Thanks to a `No break` strategy, the **NoBreak** implementation has fewer branches. But the CPU is smart enough to avoid branch misses in the same level than before.
-Now lets explore the assembly code. I don't know why the `NoBreak` has so few branches.
+- **Time Complexity**: O(n/8) for AVX2 due to 8-way parallelism
+- **Space Complexity**: O(1) - constant register usage
+- **Memory Bandwidth**: ~64 bytes per iteration (2 × 32 bytes for dual chunk loading)
 
-[TODO]
+#### Why It's Fast
+
+This implementation achieves superior benchmark performance through:
+- **Elimination of conditional branches** within the main loop
+- **Dual-chunk processing** (16 elements per iteration) 
+- **Hardware-optimized reduction operations**
+- **Consistent memory access patterns** that favor cache performance
 
 
-**Note** : In the benchmarks, we test the **worst-case** scenario where the target value is located at the end of the vector, meaning that the results are typically faster on average for most real-world cases, except for the version without an early break, which always iterates through the entire array. Hence, **AVX version is 5 times faster than the naive one for arrays sized between 16 and 4096. **
+---
 
 ## Conclusion : 
-You can't always produce very efficient and vectorized code even with very simple C code. Optimizing C code with vectorization and SIMD instructions can significantly improve performance for a specific scenario. 
+This project demonstrates that achieving optimal performance in high-performance computing requires a deep understanding of hardware architectures and low-level optimization techniques. While standard C++ constructs offer convenience, direct vectorization using SIMD intrinsics is paramount for maximizing computational throughput in data-parallel tasks. This optimization effort translates directly to reduced execution times and enhanced efficiency in HPC applications.
 
-## TODO :
+## Future Work / TODO :
 
--  Add Assembly code analysis
--  Try to improve the C style code to achieve the same level of performance than the intrinsic one
--  Try SIMD libraries like `Highway` from _Google_ or `xsimd` from _QuantStack_
--  Benchmark with strided vision of the data (in case of inefficient AOS memory layout)
+- [ ] Conduct in-depth **Assembly Code Analysis** for critical sections to identify micro-architectural bottlenecks and further optimization opportunities.
+- [ ] **Optimize Standard C++ Implementations** to approach intrinsic-level performance through compiler hints, algorithmic refinements, and data structure considerations.
+- [ ] Explore the integration and benchmarking of **Advanced SIMD Libraries** such as Google's `Highway` or QuantStack's `xsimd` to abstract low-level intrinsics while retaining high performance.
+- [ ] Implement and benchmark **Strided Data Access Patterns** to evaluate performance implications for non-contiguous memory layouts, a common challenge in HPC workflows.
+- [ ] Investigate **Cache Locality and Memory Bandwidth Utilization** as primary performance factors, employing tools like `perf` for detailed profiling.
+- [ ] Profile with hardware performance counters to analyze instruction retirement rates, cache miss ratios, and branch prediction efficiency.
+- [ ] Implement and compare alternative vectorization strategies (e.g., AVX-512 if available, ARM NEON for cross-platform compatibility).
+- [ ] Benchmark against GPU implementations using CUDA or OpenCL for massive parallelism scenarios.
 

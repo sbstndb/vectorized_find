@@ -5,7 +5,7 @@ project(VectorizedFind LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 
 
-# options de compilations en fonction du toolchain
+# Compilation options based on toolchain
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	message(STATUS "Detected GCC compiler")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mtune=native -march=native -mavx2 -Ofast -funroll-loops -ftree-vectorize -g")
@@ -21,24 +21,25 @@ endif()
 
 find_package(benchmark REQUIRED)
 
-# Ajouter le fichier de benchmark
+# Add benchmark file
 
-include_directories(include)
+include_directories(
+    include
+    src/utils
+    src/naive
+    src/compare
+    src/cpp_stl
+    src/intrinsics
+    src/benchmarks
+)
 
-add_executable(naive src/naive.cpp)
-add_executable(naive_strided src/naive_strided.cpp)
-
-add_executable(nobreak src/nobreak.cpp)
-add_executable(compare src/compare.cpp)
-
-
-add_executable(intrinsic src/intrinsic.cpp)
-add_executable(intrinsicfloat src/intrinsic_float.cpp)
-
-add_executable(intrinsic2 src/intrinsic2.cpp)
-
-
-
-add_executable(benchmark_find src/benchmark.cpp)
-target_link_libraries(benchmark_find PRIVATE benchmark::benchmark)
+add_executable(vectorized_find
+    src/utils/utils.cpp
+    src/naive/naive_find.cpp
+    src/compare/compare_find.cpp
+    src/cpp_stl/cpp_stl_find.cpp
+    src/intrinsics/intrinsic_find.cpp
+    src/benchmarks/benchmarks.cpp
+)
+target_link_libraries(vectorized_find PRIVATE benchmark::benchmark)
 
